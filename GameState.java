@@ -17,7 +17,7 @@ public final class GameState {
   * decks:　every decks in the game
   * console: where the win statement is printed
   */
-  public GameState(int playerNum, List<CardDeck> decks, PrintStream console);
+  public GameState(int playerNum, List<CardDeck> decks, PrintStream console) {
     if (playerNum < 1) {
       throw new IllegalArgumentException("Invalid players number");
     }
