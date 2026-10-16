@@ -5,6 +5,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+/* Reads the file from a given path and checks if the information inside fits the rules.
+If yes, return a the pack contains all the cards with their value
+if not, return an error */
+
 public final class Pack{
     public static final int cards_per_deck = 8;
     private final List<Card> cards;
