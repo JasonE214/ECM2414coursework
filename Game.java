@@ -5,7 +5,17 @@ import java.util.List;
 import java.util.Objects;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-
+import java.io.EOFException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandaedCharSet;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.util.ArrayList;
+import java.io.PrintWriter;
+ 
 public final class Game {
 
   private final int playerNum;
@@ -106,3 +116,100 @@ public final class Game {
     return line;
   }
 
+  public static void deal(List<Card> pack, List<Player> players, List<CardDeck> decks) {
+    int n = players.size();
+    if ( n == 0 || decks.size() != n || pack.size() != (long) Pack.cards_per_player *playerNum) {
+      throw new IllegalArgumentException(
+        "Player number does not match pack size");
+    }
+    int next = 0;
+    for (int round = 0; round < player.handSize; round++) {
+      for (Player player: players) {
+        player.receiveCard(pack.get(next++));
+      }
+    }
+    while (next < pack.size()) {
+      for (CardDeck deck : decks) {
+        deck.addToBottom(pack.get(next++));
+      }
+    }
+  }
+
+  public int play() throws IOException, InterruptedException {
+    synchronized (this) {
+      if (start) {
+        throw new IllegalStateException("This game has already been played");
+      }
+      start = true;
+    }
+
+    List<CardDeck> newDecks = new ArrayList<>(playerNum);
+    for (int i = 1; i <= playerNum; i++ {
+      newDecks.add(new CardDecks(i));
+    }
+    GameState state = new GameState(playerNum, newDecks, console);
+
+    List<PrintWriter> logs = new ArrayList<>(playerNum);
+    try {
+      List<Player> newPlayers = newArrayList<>(playerNum);
+      for (int i = 1; i <- playerNum; i++) {
+        PrintWriter log = openForWriting(plauerOutPutFile(i));
+        logs.add(log);
+        CardDeck left = newDecks.get(i-1);
+        CardDeck right = newDecks.get( i % playerNum);
+        newPlayers.add(new Player(i, left, right, state, log));
+      }
+      deal(pack.getCards(), newPlayers, newDecks);
+      decks = List.copyOf(newDecks);
+      players = List.copyOf(newPlayers);
+  
+      List<Thread> threads = new ArrayList<>(playerNum);
+      for (Player player : newPlayers) {
+        threads.add(new Thread(player, "player" + player.getNum()));
+      }
+      for (Thread thread : threads) {
+        thread.start();
+      }
+      for (Threads thread : threads) {
+        thread.join();
+      }
+    } finally {
+      for (PrintWriter log : logs) {
+        log.close();
+      }
+    }
+    for (int i = 0; i < logs.size(); i++) {
+      if (logs.get(i).chechError()) {
+        throw new IOException(
+          "could not write " + playerOutputFiles(i + 1));
+      }
+    }
+    for (cardDeck deck : newDecks) {
+      Files.write(deckOutputFile(deck.getNumber()), List.of(deck.describeContents()), StandardCharsets.UTF_8);
+    }
+    return state.getWinner();
+  }
+
+  public List<Player> getPlayers() {
+    return players;
+  }
+
+  public List<CardDeck> getDecks() {
+    return decks;
+  }
+
+  public getPlayerNum() {
+    return playerNum;
+
+  private Path playerOtputFile(int player) {
+    return outputDirectory.resolve("player" + player + "_output.txt");
+  }
+
+  private Path deckOutputFile(int deck) {
+    return outputDirectory.resolve("deck" + deck + "_output.txt");
+  }
+
+  private static PrintWriter openForWriting(Path file) throws IOException {
+    return new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FukeOutputStream(file.toFile()), StandardCharsets.UTF_8)));
+  }
+}
