@@ -3,7 +3,8 @@
 public final class Card{
     private final int value;
 
-    public create_card(int value){
+    public create_card(int value) throws IllegalArgumentException
+    {
         if (value < 0){
             throw new IllegalArgumentException(
                     "A card value" + value + " is a negative integer.");
