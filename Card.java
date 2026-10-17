@@ -3,12 +3,12 @@
 public final class Card{
     private final int value;
 
-    public create_card(int value) throws IllegalArgumentException
+    public Card(int value) throws IllegalArgumentException
     {   
-        // value of card can only be greater than 0
+        // value of card can only be greater than -1
         if (value < 0){
             throw new IllegalArgumentException(
-                    "A card value" + value + " is a negative integer.");
+                    "A card value " + value + " is a negative integer.");
         }
         else this.value = value;
     }

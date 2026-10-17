@@ -8,8 +8,8 @@ public final class GameState {
 
   public static final int noWinner = 0;
 
-  private final atomicInteger winner = new atomicInteger(noWinner);
-  private final countDownLatch startGate;
+  private final AtomicInteger winner = new AtomicInteger(noWinner);
+  private final CountDownLatch startGate;
   private final List<CardDeck> decks;
   private final PrintStream console;
 
@@ -43,8 +43,8 @@ public final class GameState {
       return false;
     }
     console.println("player " + playerIndex + " wins!");
-    for (cardDeck deck : decks) {
-      deck.wakeWaiters();
+    for (CardDeck deck : decks) {
+      	deck.wakeWaitingPlayers();
     }
     return true;
   }
@@ -53,7 +53,7 @@ public final class GameState {
     startGate.countDown();
   }
 
-  public void waitPlayers() throw InterruptException {
+  public void waitPlayers() throws InterruptedException {
     startGate.await();
   }
 }

@@ -10,17 +10,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.charset.StandaedCharSet;
+import java.nio.charset.StandardCharsets;	
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.util.ArrayList;
 import java.io.PrintWriter;
  
-public final class Game {
+public final class CardGame  {
 
   private final int playerNum;
   private final Pack pack;
-  private final Path OutputDirectory;
+  private final Path outputDirectory;
   private final PrintStream console;
 
   private boolean start;
@@ -28,7 +28,7 @@ public final class Game {
   private volatile List<CardDeck> decks = List.of();
   private volatile List<Player> players = List.of();
 
-  public Game(int playerNum, Pack pack, Path outputDirectory) {
+  public CardGame(int playerNum, Pack pack, Path outputDirectory) {
     this(playerNum, pack, outputDirectory, System.out);
   }
 
@@ -37,7 +37,7 @@ public final class Game {
   * outputDirectory: the path of where the output files are written
   *console: where the winner announces his win
   */
-  public Game(int playerNum, Pack pack, Path outputDirectory, PrintStream console) {
+  public CardGame(int playerNum, Pack pack, Path outputDirectory, PrintStream console) {
     if (playerNum < 1) {
       throw new IllegalArgumentException(
         "Invalid player numbers");
@@ -50,7 +50,7 @@ public final class Game {
     this.playerNum = playerNum;
     this.pack = pack;
     this.outputDirectory = Objects.requireNonNull(outputDirectory, "outputDirectory");
-    this.console = Objects.requireNonNill(console, "console");
+    this.console = Objects.requireNonNull(console, "console");
   }
 
   public static void main(String[] args) {
@@ -58,14 +58,14 @@ public final class Game {
     try {
       runInteractive(in, System.out, Paths.get(""));
     } catch (IOException e) {
-      System.err.println("The output files could not be written" : e.getMessage());
+      System.err.println("The output files could not be written" + e.getMessage());
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
     }
   }
   // takes the number of players and implements a pack, then start the game
   public static int runInteractive(BufferedReader in, PrintStream out, Path outputDirectory)
-        throw IOException, InterrutedException {
+        throws IOException, InterruptedException {
       int players;
       Pack pack;
       try {
@@ -74,11 +74,12 @@ public final class Game {
       } catch (EOFException e) {
         out.println(
           "Input ended before receiving a valid number of players or pack");
-        return //add later, let the gamestates be no winner
+        return GameState.noWinner;
       }
       return new CardGame(players, pack, outputDirectory, out).play();
+  }
 
-  public static int askForPlayerNum(BufferedReader in, PrintStream out) throws IOEException {
+  public static int askForPlayerNum(BufferedReader in, PrintStream out) throws  IOException {
     while (true) {
       out.println("Please enter the number of players:");
       String ans = readAns(in).trim();
@@ -87,22 +88,22 @@ public final class Game {
         if (players >= 1) {
           return players;
         }
-      } catch (numberFormatException e) { // empty because it also falls through the message below
+      } catch (NumberFormatException e) { // empty because it also falls through the message below
       }
       out.println("Invalid numbers entered:" + ans + "is not a valid number");
     }
   }
 
-  puclic static Pack askForPack(BufferedReader in, PrintStream out, int playerNum)
+  public static Pack askForPack(BufferedReader in, PrintStream out, int playerNum)
       throws IOException {
     while (true) {
-      out.printLn("Please enter location of pack to load:");
+      out.println("Please enter location of pack to load:");
       String ans = readAns(in).trim();
       try {
-        return Pack.load_decks(Paths.get(ans), playerNum);
-      } catch (InvalidPackException e) {
-        out.println("this is not a valid pack: " + e.getMessage());
+        return Pack.Load_decks(playerNum, Paths.get(ans));
       } catch (InvalidPathException e) {
+        out.println("this is not a valid pack: " + e.getMessage());
+      } catch (IllegalArgumentException e) {
         out.println("this is not a valid pack: " + ans + " is not a valid location.");
       }
     }
@@ -118,12 +119,12 @@ public final class Game {
 
   public static void deal(List<Card> pack, List<Player> players, List<CardDeck> decks) {
     int n = players.size();
-    if ( n == 0 || decks.size() != n || pack.size() != (long) Pack.cards_per_player *playerNum) {
+    if ( n == 0 || decks.size() != n || pack.size() != (long) Pack.cards_per_deck * n) {
       throw new IllegalArgumentException(
         "Player number does not match pack size");
     }
     int next = 0;
-    for (int round = 0; round < player.handSize; round++) {
+    for (int round = 0; round < Player.handSize; round++) {
       for (Player player: players) {
         player.receiveCard(pack.get(next++));
       }
@@ -144,16 +145,16 @@ public final class Game {
     }
 
     List<CardDeck> newDecks = new ArrayList<>(playerNum);
-    for (int i = 1; i <= playerNum; i++ {
-      newDecks.add(new CardDecks(i));
+    for (int i = 1; i <= playerNum; i++) {
+      newDecks.add(new CardDeck(i));
     }
     GameState state = new GameState(playerNum, newDecks, console);
 
     List<PrintWriter> logs = new ArrayList<>(playerNum);
     try {
-      List<Player> newPlayers = newArrayList<>(playerNum);
-      for (int i = 1; i <- playerNum; i++) {
-        PrintWriter log = openForWriting(plauerOutPutFile(i));
+      List<Player> newPlayers = new ArrayList<>(playerNum);
+      for (int i = 1; i <= playerNum; i++) {
+        PrintWriter log = openForWriting(playerOutputFile(i));
         logs.add(log);
         CardDeck left = newDecks.get(i-1);
         CardDeck right = newDecks.get( i % playerNum);
@@ -170,7 +171,7 @@ public final class Game {
       for (Thread thread : threads) {
         thread.start();
       }
-      for (Threads thread : threads) {
+      for (Thread thread : threads) {
         thread.join();
       }
     } finally {
@@ -179,12 +180,12 @@ public final class Game {
       }
     }
     for (int i = 0; i < logs.size(); i++) {
-      if (logs.get(i).chechError()) {
+      if (logs.get(i).checkError()) {
         throw new IOException(
-          "could not write " + playerOutputFiles(i + 1));
+          "could not write " + 	playerOutputFile(i + 1));
       }
     }
-    for (cardDeck deck : newDecks) {
+    for (CardDeck deck : newDecks) {
       Files.write(deckOutputFile(deck.getNumber()), List.of(deck.describeContents()), StandardCharsets.UTF_8);
     }
     return state.getWinner();
@@ -198,10 +199,11 @@ public final class Game {
     return decks;
   }
 
-  public getPlayerNum() {
+  public int getPlayerNum() {
     return playerNum;
-
-  private Path playerOtputFile(int player) {
+  }
+  
+  private Path playerOutputFile(int player) {
     return outputDirectory.resolve("player" + player + "_output.txt");
   }
 
@@ -210,6 +212,6 @@ public final class Game {
   }
 
   private static PrintWriter openForWriting(Path file) throws IOException {
-    return new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FukeOutputStream(file.toFile()), StandardCharsets.UTF_8)));
+    return new PrintWriter(new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file.toFile()), StandardCharsets.UTF_8)));
   }
 }

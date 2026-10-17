@@ -163,4 +163,5 @@ return true if a card is available to draw, false if waiting was abandoned*/
             second.unlock();   
             first.unlock();
         }
+    }
 }

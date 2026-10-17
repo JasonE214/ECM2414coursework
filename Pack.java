@@ -35,19 +35,18 @@ public final class Pack{
         
         //finding the index of last row with an actual value
         int lastRow = rows.size() - 1;
-        if (lastRow >= 0){
-            while (rows.get(lastRow).trim().isEmpty()) {
-                lastRow--;
+        while (lastRow >= 0 && rows.get(lastRow).trim().isEmpty()) 
+        {
+        lastRow--;
         }
-        }
-        List<Card> cards = new ArrayList<>(lastRow);
+        List<Card> cards = 	new ArrayList<>();
         for (int i = 0; i <= lastRow; i++) {
             cards.add(new Card(Rowcheck(rows.get(i), i + 1))); // make a new list without the spaces
         }
         int required_cards =  cards_per_deck * players_nums;
         if (cards.size() != required_cards) {
             throw new IllegalArgumentException("A pack for " + players_nums + " player"
-            + " must have exactly " + required_cards + " rows of card values, but this one only have " 
+            + " must have exactly " + required_cards + " rows of card values, but this one have " 
             + cards.size() + " amount of cards.");
         }
         return new Pack(cards);
@@ -61,7 +60,7 @@ public final class Pack{
         }
         if (text.matches("-[0-9]+") || !text.matches("[0-9]+")) {
             throw new IllegalArgumentException("row " + rowNumber + ": Invalid number," + 
-            " card values must be positive whole number.");
+            " card values must be larger than -1.");
         }
 
         // Incase the number in the file is too large for the Int to handle

@@ -9,8 +9,9 @@ public final class Player implements Runnable {
   public static final int handSize = 4;
 
   private final int num;
-  private final leftDeck;
-  private final rightDeck;
+  private final CardDeck leftDeck;
+  private final CardDeck rightDeck;
+  private final GameState game;
   private final PrintWriter log;
 
   private final List<Card> hand = new ArrayList<>(handSize + 1);
@@ -20,10 +21,10 @@ public final class Player implements Runnable {
   * rightDeck: Player discards to the bottom of this deck
   * log: write down the player's move 
   */
-  public Player(int num, CardDeck leftDeck, cardDeck rightDeck, PrintWriter log) {
+  Player(int num, CardDeck leftDeck, CardDeck rightDeck, GameState game, PrintWriter log) {
     if (num < 1) {
-      throws new IllegalArgumentException (
-        "Invalid player index") //index error checking
+      throw new IllegalArgumentException (
+        "Invalid player index"); //index error checking
         }
 
     this.num = num;
@@ -69,7 +70,7 @@ public final class Player implements Runnable {
     return true;
   }
 
-  @suppressWarnings("try")
+  @SuppressWarnings("try")
   public synchronized Turn takeTurn() {
     if (hand.size() != handSize) {
        throw new IllegalStateException (
@@ -118,24 +119,24 @@ public final class Player implements Runnable {
       game.waitPlayers();
 
       while (!won && !game.isOver()) {
-        if (!leftDeck.awaitCard(game::isOver()) {
+        if (!leftDeck.awaitCard(game::isOver)) {
           break;
         }
         Turn turn = takeTurn();
         if (turn == null) {
-          breaks;
+          break;
         }
-        write("player " + num + " draws a " + turn.getDrawn().getValue() + " from deck " + leftDeck.getNum());
-        write("player " + num + " discards a " + turn.getDiscarded().getValue() + " to deck " + rightDeck.getNum());
+        write("player " + num + " draws a " + turn.getDrawn().getValue() + " from deck " + leftDeck.getNumber());
+        write("player " + num + " discards a " + turn.getDiscarded().getValue() + " to deck " + rightDeck.getNumber());
         write("player " + num + " current hand is " + describe(turn.getHandAfter()));
         if(hasWinningHand()) {
           won = game.declareWinner(num);
         }
       }
-    } catch (InterruptedExecption e) {
-      Thread.curremtThread().interrupt();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
     } finally {
-      writEnding(won);
+      writeEnding(won);
     }
   }
 
@@ -150,14 +151,14 @@ public final class Player implements Runnable {
       if (winner != GameState.noWinner) {
         write("Player " + winner + " has informed player " + num + "he has won");
       }
-      write("player "　＋　num + " exits");
-      write("player " + num + "hand: " finalHand);
+      write("player " + num + " exits");
+      write("player " + num + "hand: " + finalHand);
     }
     log.flush();
   }
 
   private void write(String line) {
-    log.printLn(line);
+    log.println(line);
   }
 
   private static String describe(List<Card> cards) {
@@ -173,12 +174,12 @@ public final class Player implements Runnable {
 
   public static final class Turn {
     private final Card drawn;
-    private final Card discard;
+    private final Card discarded;
     private final List<Card> handAfter;
 
-    Turn(Card drawn, Card discard, List<Card> handAfter) {
+    Turn(Card drawn, Card discarded, List<Card> handAfter) {
       this.drawn = drawn;
-      this.doscarded = discarded;
+      this.discarded = discarded;
       this.handAfter = handAfter;
     }
 
