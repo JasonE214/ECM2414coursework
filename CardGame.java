@@ -32,7 +32,8 @@ public final class CardGame  {
     this(playerNum, pack, outputDirectory, System.out);
   }
 
-  /* playerNum: number of players, n
+  /* This is the executable class where sets up, run and record the game
+  * playerNum: number of players, n
   * pack: pack of cards, 8n
   * outputDirectory: the path of where the output files are written
   *console: where the winner announces his win
@@ -52,7 +53,7 @@ public final class CardGame  {
     this.outputDirectory = Objects.requireNonNull(outputDirectory, "outputDirectory");
     this.console = Objects.requireNonNull(console, "console");
   }
-
+  //The main entry point where set up the I/O
   public static void main(String[] args) {
     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
     try {
@@ -78,7 +79,7 @@ public final class CardGame  {
       }
       return new CardGame(players, pack, outputDirectory, out).play();
   }
-
+ //get players number
   public static int askForPlayerNum(BufferedReader in, PrintStream out) throws  IOException {
     while (true) {
       out.println("Please enter the number of players:");
@@ -93,7 +94,7 @@ public final class CardGame  {
       out.println("Invalid numbers entered:" + ans + "is not a valid number");
     }
   }
-
+  //get a valid deck to use
   public static Pack askForPack(BufferedReader in, PrintStream out, int playerNum)
       throws IOException {
     while (true) {
@@ -108,7 +109,7 @@ public final class CardGame  {
       }
     }
   }
-
+  //allows other function to check if what they get is valid
   public static String readAns(BufferedReader in) throws IOException {
     String line = in.readLine();
     if (line == null) {
@@ -116,7 +117,7 @@ public final class CardGame  {
     }
     return line;
   }
-
+  //Deals the deck, first to the the players until they get 4 cards each. Then the remaining to the decks.
   public static void deal(List<Card> pack, List<Player> players, List<CardDeck> decks) {
     int n = players.size();
     if ( n == 0 || decks.size() != n || pack.size() != (long) Pack.cards_per_deck * n) {
@@ -135,7 +136,7 @@ public final class CardGame  {
       }
     }
   }
-
+  //runs the whole game from dealing cards, runs the threads for players. And output the record files
   public int play() throws IOException, InterruptedException {
     synchronized (this) {
       if (start) {
@@ -149,7 +150,7 @@ public final class CardGame  {
       newDecks.add(new CardDeck(i));
     }
     GameState state = new GameState(playerNum, newDecks, console);
-
+    //setting up games with player numbers and output files
     List<PrintWriter> logs = new ArrayList<>(playerNum);
     try {
       List<Player> newPlayers = new ArrayList<>(playerNum);
@@ -163,7 +164,7 @@ public final class CardGame  {
       deal(pack.getCards(), newPlayers, newDecks);
       decks = List.copyOf(newDecks);
       players = List.copyOf(newPlayers);
-  
+      //runs the threads
       List<Thread> threads = new ArrayList<>(playerNum);
       for (Player player : newPlayers) {
         threads.add(new Thread(player, "player" + player.getNum()));
@@ -185,7 +186,7 @@ public final class CardGame  {
           "could not write " + 	playerOutputFile(i + 1));
       }
     }
-    for (CardDeck deck : newDecks) {
+    for (CardDeck deck : newDecks) { //recording in the output files
       Files.write(deckOutputFile(deck.getNumber()), List.of(deck.describeContents()), StandardCharsets.UTF_8);
     }
     return state.getWinner();
