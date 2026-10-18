@@ -1,6 +1,7 @@
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import org.junit.After;
 import org.junit.Test;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 
 public class GameStateTest {
 
@@ -42,12 +44,12 @@ public class GameStateTest {
   //test if one player declare to be the winner, will it wakes other players that are waiting for a card
   @Test(timeout= 10_000)
   public void wakeTest() throws Exception {
-    CardDeck = empty = new CardDeck(1);
+    CardDeck empty = new CardDeck(1);
     GameState game = new GameState(2, List.of(empty), TestSupport.quietConsole());
     Future<Boolean> waiting = background.submit(() -> empty.awaitCard(game::isOver));
 
     Thread.sleep(100);
-    assertFalse("waiting for a card".waiting.isDone());
+    assertFalse("waiting for a card", waiting.isDone());
 
     game.declareWinner(2);
     assertFalse("woken, and gives up waiting", waiting.get(5,TimeUnit.SECONDS));
@@ -57,7 +59,7 @@ public class GameStateTest {
   public void stratGateTest() throws Exception {
     GameState game = new GameState(3, List.of(), TestSupport.quietConsole());
     Future<?> waiting = background.submit(() -> {
-      game.waitplayers();
+      game.waitPlayers();
       return null;
     });
 
