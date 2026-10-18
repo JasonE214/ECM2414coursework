@@ -97,4 +97,102 @@ final class TestSupport {
         });
     }
 
+//Make sure the pack is winable, uses seed to make the filler cards to make sure 
+//problem can be trace down everytime a test fails 
+
+    static List<Integer> winnableValues(int players, long seed) { 
+
+        Random random = new Random(seed); 
+
+        List<Integer> values = new ArrayList<>(); 
+
+        for (int value = 1; value <= players; value++) { 
+
+            values.addAll(Collections.nCopies(4, value)); 
+
+        } 
+
+        while (values.size() < Pack.cards_per_deck * players) { 
+
+            values.add(random.nextInt(players + 4)); // 0 .. n+3 
+
+        } 
+
+        Collections.shuffle(values, random); 
+
+        return values; 
+
+    }
+
+//fix deck for 1 player game 
+
+    static List<Integer> onePlayerPackValues() { 
+
+        return List.of(1, 2, 3, 4, 1, 1, 1, 5); 
+
+    } 
+
+//make a place for the testing to write stuff in 
+
+    static PrintWriter quietLog() { 
+
+        return new PrintWriter(new StringWriter()); 
+
+    } 
+
+//mute the console from printing messages like player win, just need to know if the test is working or not 
+
+    static PrintStream quietConsole() { 
+
+        return new PrintStream(new ByteArrayOutputStream(), true); 
+
+    } 
+
+//the testting player input 
+
+    static BufferedReader input(String... lines) { 
+
+        return new BufferedReader(new StringReader(String.join("\n", lines) + "\n")); 
+
+    } 
+
+//split test into list of lines \\R so it can handle both linux and window 
+
+    static List<String> lines(String text) { 
+
+        if (text.isEmpty()) { 
+
+            return List.of(); 
+
+        } 
+
+        return Arrays.asList(text.split("\\R")); 
+
+    } 
+
+//count how many lines have the keyword, e.g. check if there is only 1 win to make sure only 1 player won 
+
+    static long count(List<String> lines, String fragment) { 
+
+        return lines.stream().filter(line -> line.contains(fragment)).count(); 
+
+    }
+
+//even thou I mute the console, but still need someway to remember the input 
+
+    static final class RecordingConsole { 
+
+        private final ByteArrayOutputStream bytes = new ByteArrayOutputStream(); 
+
+        final PrintStream stream = new PrintStream(bytes, true, StandardCharsets.UTF_8); 
+
+ 
+
+        List<String> lines() { 
+
+            return TestSupport.lines(new String(bytes.toByteArray(), StandardCharsets.UTF_8)); 
+
+        } 
+
+    }
 }
