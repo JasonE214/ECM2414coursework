@@ -39,7 +39,7 @@ public class GameStateTest {
 
     assertTrue(game.isOver());
     assertEquals(2, game.getWinner());
-    assertEquals(List.of("player 2 wins!"), console.lines());
+    assertEquals(List.of("player 2 wins"), console.lines());
   }
   //test if one player declare to be the winner, will it wakes other players that are waiting for a card
   @Test(timeout= 10_000)

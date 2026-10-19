@@ -91,7 +91,7 @@ public final class CardGame  {
         }
       } catch (NumberFormatException e) { // empty because it also falls through the message below
       }
-      out.println("Invalid numbers entered:" + ans + "is not a valid number");
+      out.println("Invalid number entered: '" + ans + "' is not a valid number");
     }
   }
   //get a valid deck to use
@@ -103,9 +103,9 @@ public final class CardGame  {
       try {
         return Pack.Load_decks(playerNum, Paths.get(ans));
       } catch (InvalidPathException e) {
-        out.println("this is not a valid pack: " + e.getMessage());
-      } catch (IllegalArgumentException e) {
         out.println("this is not a valid pack: " + ans + " is not a valid location.");
+      } catch (IllegalArgumentException e) {
+        out.println("this is not a valid pack: " + e.getMessage());
       }
     }
   }

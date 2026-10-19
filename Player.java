@@ -147,16 +147,16 @@ public final class Player implements Runnable {
   private void writeEnding(boolean won) {
     String finalHand = describe(getHand());
     if (won) {
-      write("Player " + num + " wins!");
-      write("Player " + num + " exits");
-      write("Player " + num + " final hand: " + finalHand);
+      write("player " + num + " wins");
+      write("player " + num + " exits");
+      write("player " + num + " final hand: " + finalHand);
     } else {
       int winner = game.getWinner();
       if (winner != GameState.noWinner) {
-        write("Player " + winner + " has informed player " + num + "he has won");
+        write("player " + winner + " has informed player " + num + " that player " + winner + " has won");
       }
       write("player " + num + " exits");
-      write("player " + num + "hand: " + finalHand);
+      write("player " + num + " hand: " + finalHand);
     }
     log.flush();
   }

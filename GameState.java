@@ -43,7 +43,7 @@ public final class GameState {
     if (!winner.compareAndSet(noWinner, playerIndex)) {
       return false;
     }
-    console.println("player " + playerIndex + " wins!");
+    console.println("player " + playerIndex + " wins");
     //wake other players who are waiting cards
     for (CardDeck deck : decks) {
       	deck.wakeWaitingPlayers();

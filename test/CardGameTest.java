@@ -85,11 +85,11 @@ public class CardGameTest {
                 "player 1 draws a 1 from deck 1",
                 "player 1 discards a 4 to deck 1",
                 "player 1 current hand is 1 1 1 1",
-                "player 1 wins!",
+                "player 1 wins",
                 "player 1 exits",
                 "player 1 final hand: 1 1 1 1"), read(folder, "player1_output.txt"));
         assertEquals(List.of("deck1 contents: 5 2 3 4"), read(folder, "deck1_output.txt"));
-        assertEquals(List.of("player 1 wins!"), console.lines());
+        assertEquals(List.of("player 1 wins"), console.lines());
         assertEquals(2, outputFileCount(folder));
     }
 
@@ -111,7 +111,7 @@ public class CardGameTest {
 
             String run = "run " + repeat;
             assertEquals(run, 2, winner);
-            assertEquals(run, List.of("player 2 wins!"), console.lines());
+            assertEquals(run, List.of("player 2 wins"), console.lines());
             assertEquals(run, List.of(
                     "player 1 initial hand 1 2 5 7",
                     "player 2 has informed player 1 that player 2 has won",
@@ -119,7 +119,7 @@ public class CardGameTest {
                     "player 1 hand: 1 2 5 7"), read(folder, "player1_output.txt"));
             assertEquals(run, List.of(
                     "player 2 initial hand 9 9 9 9",
-                    "player 2 wins!",
+                    "player 2 wins",
                     "player 2 exits",
                     "player 2 final hand: 9 9 9 9"), read(folder, "player2_output.txt"));
             assertEquals(run, List.of(
@@ -141,21 +141,24 @@ public class CardGameTest {
             values.add(value);
         }
         Collections.shuffle(values, new Random(7));
-        CardGame game = new CardGame(4, TestSupport.pack(4, values), temp.getRoot().toPath(),
-                TestSupport.quietConsole());
+                long looks = 0;
+        // a game can very rarely finish before we get a look, so play again (up to 20 games) until we do
+        for (int game_no = 1; game_no <= 20 && looks == 0; game_no++) {
+            CardGame game = new CardGame(4, TestSupport.pack(4, values), temp.newFolder("game" + game_no).toPath(),
+                    TestSupport.quietConsole());
 
-        Future<Integer> result = background.submit(game::play);
-        long looks = 0;
-        while (!result.isDone()) {
-            for (Player player : game.getPlayers()) {
-                assertEquals("player " + player.getNum() + "'s hand",
-                        Player.handSize, player.getHand().size());
-                looks++;
+            Future<Integer> result = background.submit(game::play);
+            while (!result.isDone()) {
+                for (Player player : game.getPlayers()) {
+                    assertEquals("player " + player.getNum() + "'s hand",
+                            Player.handSize, player.getHand().size());
+                    looks++;
+                }
             }
+            int winner = result.get();
+            assertTrue(winner >= 1 && winner <= 4);
         }
-        int winner = result.get();
         assertTrue("the hands were looked at during the game", looks > 0);
-        assertTrue(winner >= 1 && winner <= 4);
     }
     //test if the game would stop if the output files could not be created
     @Test(timeout = 10_000)
@@ -185,7 +188,7 @@ public class CardGameTest {
 
         assertEquals(3, players);
         assertEquals(6, TestSupport.count(out.lines(), "Please enter the number of players:"));
-        assertEquals(5, TestSupport.count(out.lines(), "is not a valid number of players"));
+        assertEquals(5, TestSupport.count(out.lines(), "is not a valid number"));
     }
     //giving invalid pack
     @Test
@@ -239,7 +242,7 @@ public class CardGameTest {
                 "Please enter location of pack to load:",
                 "this is not a valid pack: There is nothing at 'nope.txt'.",
                 "Please enter location of pack to load:",
-                "player 1 wins!"), out.lines());
+                "player 1 wins"), out.lines());
         assertEquals(2, outputFileCount(outputFolder));
     }
 }
